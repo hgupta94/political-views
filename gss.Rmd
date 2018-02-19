@@ -33,7 +33,7 @@ load("gss.Rdata")
 * * *
   
 ## Part 2: Research question
-There has been a lot of discussion about the country becoming more and more polarized today. As a result, I would like to see if there is a change in the percentage of people who consider themselves extremely liberal and extremely conservative between 1974 (the first year the question was posed) and 2012 (the  most recent year in the dataset). This will consist of 3 tests: extremely liberal 1974 vs 2012, extremely conservative 1974 vs 2012, and extremely liberal + extremely conservative 1974 vs 2012.
+There has been a lot of discussion about the country becoming more and more polarized today. As a result, I would like to see if there is a change in the percentage of people who consider themselves extremely liberal and extremely conservative between 1974 (the first year the question was posed) and 2012 (the  most recent year in the dataset).
   
 * * *
   
