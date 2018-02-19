@@ -69,8 +69,7 @@ gss2012 %>%
 
 ggplot(data = gss1974, aes(x=polviews)) +
   geom_bar() +
-  ggtitle("Political Views in 1974") +
-  theme(plot.title = element_text(face = "bold",size = 17, hjust = 0.5)) +
+  ggtitle("Political Views in 1974") +  theme(plot.title = element_text(face = "bold",size = 17, hjust = 0.5)) +
   theme(axis.text.x = element_text(angle = 20, hjust = 1))
 
 ggplot(data = gss2012, aes(x=polviews)) +
@@ -90,6 +89,7 @@ Here, we can see the distribution of how people categorize their political views
 * **Indepenence:** Respondents in 1974 are less than 10% of the total US population, so they are independent of each other. The same applies to respondents in 2012.
 * **Sample Size/Skewness:** 
 1974: `r round(nrow(gss1974) * ((count(subset(gss2012, polviews=="Extremely Liberal"))/nrow(gss2012)*nrow(gss2012)) + (count(subset(gss1974, polviews=="Extremely Liberal"))/nrow(gss1974)*nrow(gss1974)))/(nrow(gss2012) + nrow(gss1974)),2)` > 10; 
+
 2012: `r round(nrow(gss2012) * ((count(subset(gss2012, polviews=="Extremely Liberal"))/nrow(gss2012)*nrow(gss2012)) + (count(subset(gss1974, polviews=="Extremely Liberal"))/nrow(gss1974)*nrow(gss1974)))/(nrow(gss2012) + nrow(gss1974)),2)` > 10
 - We can conclude that the sampling distribution of the difference between the 2 proportions is nearly normal.
 
