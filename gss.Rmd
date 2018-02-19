@@ -137,6 +137,7 @@ phat_2012 <- count(subset(gss2012, polviews=="Extrmly Conservative"))/nrow(gss20
 phat_1974 <- count(subset(gss1974, polviews=="Extrmly Conservative"))/nrow(gss1974)
 diff <- phat_2012 - phat_1974
 n1 <- nrow(gss2012)
+
 n2 <- nrow(gss1974)
 
 phat_pooled <- ((phat_2012*n1) + (phat_1974*n2))/(n1 + n2)
@@ -158,6 +159,7 @@ max
 I am 95% confident that the true difference between those who identify themselves as extremely conservative between 1974 and 2012 is (-0.0006, 0.0235). Since the null value (diff=0) lies *within* this interval, it agrees with the hypothesis test.
 
 ####Extreme Conservatives & Liberals between 1974-2012
+
 If the extreme conservative test concluded that there is a difference between the 2 years, we could safely conclulde that the proportion of extreme ideologies (both liberal and conservative) is different between 1974 and 2012. However, we need to conduct one more test to figure this out.
 
 * h0: There is no difference in extreme political views between 1974 and 2012 (p1 = p2)
