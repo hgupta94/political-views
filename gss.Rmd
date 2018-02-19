@@ -23,8 +23,6 @@ library(statsr)
 load("gss.Rdata")
 ```
 
-
-
 * * *
   
 ## Part 1: Data
@@ -52,7 +50,8 @@ gss2012 <- gss %>%
 
 gss1974_2012 <- gss %>%
   filter(gss$year == 1974 | gss$year == 2012) %>%
-  select(year, polviews) %>%
+
+select(year, polviews) %>%
   na.omit(polviews)
 ```
 First, I filtered the data for each of the years and only included the column indicating a respondent's political views. I then excluded NAs from each data frame. I then did a calculation to determine the proportion for each response as well as include a bar chart to visualise:
@@ -88,6 +87,7 @@ Here, we can see the distribution of how people categorize their political views
 ### Conditions
 * **Indepenence:** Respondents in 1974 are less than 10% of the total US population, so they are independent of each other. The same applies to respondents in 2012.
 * **Sample Size/Skewness:** 
+
 1974: `r round(nrow(gss1974) * ((count(subset(gss2012, polviews=="Extremely Liberal"))/nrow(gss2012)*nrow(gss2012)) + (count(subset(gss1974, polviews=="Extremely Liberal"))/nrow(gss1974)*nrow(gss1974)))/(nrow(gss2012) + nrow(gss1974)),2)` > 10; 
 
 2012: `r round(nrow(gss2012) * ((count(subset(gss2012, polviews=="Extremely Liberal"))/nrow(gss2012)*nrow(gss2012)) + (count(subset(gss1974, polviews=="Extremely Liberal"))/nrow(gss1974)*nrow(gss1974)))/(nrow(gss2012) + nrow(gss1974)),2)` > 10
