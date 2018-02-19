@@ -1,0 +1,189 @@
+---
+title: "Statistical inference with the GSS data"
+output: 
+html_document: 
+fig_height: 4
+highlight: pygments
+theme: spacelab
+---
+  
+## Setup
+  
+### Load packages
+  
+```{r load-packages, message = FALSE}
+library(ggplot2)
+library(dplyr)
+library(statsr)
+```
+
+### Load data
+
+```{r load-data}
+load("gss.Rdata")
+```
+
+
+
+* * *
+  
+## Part 1: Data
+* Households were randomly selected to properly represent a cross-section of the country and so the results of the survey are generalizable to the US population, but since random assignment was not used, causality cannot be inferred.
+
+* * *
+  
+## Part 2: Research question
+There has been a lot of discussion about the country becoming more and more polarized today. As a result, I would like to see if there is a change in the percentage of people who consider themselves extremely liberal and extremely conservative between 1974 (the first year the question was posed) and 2012 (the  most recent year in the dataset). This will consist of 3 tests: extremely liberal 1974 vs 2012, extremely conservative 1974 vs 2012, and extremely liberal + extremely conservative 1974 vs 2012.
+  
+* * *
+  
+## Part 3: Exploratory data analysis
+
+```{r}
+gss1974 <- gss %>%
+  filter(gss$year == 1974) %>%
+  select(year, polviews) %>%
+  na.omit(polviews)
+
+gss2012 <- gss %>%
+  filter(gss$year == 2012) %>%
+  select(year, polviews) %>%
+  na.omit(polviews)
+
+gss1974_2012 <- gss %>%
+  filter(gss$year == 1974 | gss$year == 2012) %>%
+  select(year, polviews) %>%
+  na.omit(polviews)
+```
+First, I filtered the data for each of the years and only included the column indicating a respondent's political views. I then excluded NAs from each data frame. I then did a calculation to determine the proportion for each response as well as include a bar chart to visualise:
+
+```{r}
+gss1974 %>%
+  group_by(polviews) %>%
+  summarise(count = n(), prop = round(count/nrow(gss1974),4))
+
+gss2012 %>%
+  group_by(polviews) %>%
+  summarise(count = n(), prop = round(count/nrow(gss2012),4))
+
+
+ggplot(data = gss1974, aes(x=polviews)) +
+  geom_bar() +
+  ggtitle("Political Views in 1974") +
+  theme(plot.title = element_text(face = "bold",size = 17, hjust = 0.5)) +
+  theme(axis.text.x = element_text(angle = 20, hjust = 1))
+
+ggplot(data = gss2012, aes(x=polviews)) +
+  geom_bar() +
+  ggtitle("Political Views in 2012") +
+  theme(plot.title = element_text(face = "bold",size = 17, hjust = 0.5)) +
+  theme(axis.text.x = element_text(angle = 20, hjust = 1))
+  
+```
+
+Here, we can see the distribution of how people categorize their political views. At first glance, there does not seem to be that much of a difference; the two distributions look fairly normally distributed with a significant peak at "moderate". However, looking at the proportions for the two shows a decrease in those who view themselves as "moderate" or "slightly liberal/conserevative" and an increase in the "extreme liberal/conservative". This lends credence to the idea that people are becoming more polarized. 
+
+* * *
+  
+## Part 4: Inference
+### Conditions
+* **Indepenence:** Respondents in 1974 are less than 10% of the total US population, so they are independent of each other. The same applies to respondents in 2012.
+* **Sample Size/Skewness:** 
+1974: `r round(nrow(gss1974) * ((count(subset(gss2012, polviews=="Extremely Liberal"))/nrow(gss2012)*nrow(gss2012)) + (count(subset(gss1974, polviews=="Extremely Liberal"))/nrow(gss1974)*nrow(gss1974)))/(nrow(gss2012) + nrow(gss1974)),2)` > 10; 
+2012: `r round(nrow(gss2012) * ((count(subset(gss2012, polviews=="Extremely Liberal"))/nrow(gss2012)*nrow(gss2012)) + (count(subset(gss1974, polviews=="Extremely Liberal"))/nrow(gss1974)*nrow(gss1974)))/(nrow(gss2012) + nrow(gss1974)),2)` > 10
+- We can conclude that the sampling distribution of the difference between the 2 proportions is nearly normal.
+
+### Method
+Since I am going to compare differences in proportions, I used the hypothesis test for **comparing two proportions**. I will find the proportion relating to extreme liberal/conservative responses will manually conduct the hypotheses tests using a pooled proportion. Confidence intervals are included with all tests because of this method.
+
+###Exteme Liberals between 1974-2012
+
+* h0: There is no difference in extreme liberals between 1974 and 2012 (p1 = p2)
+* h1: There is a difference in extreme liberals between 1974 and 2012 (p1 =/= p2)
+
+```{r}
+phat_2012 <- count(subset(gss2012, polviews=="Extremely Liberal"))/nrow(gss2012)
+phat_1974 <- count(subset(gss1974, polviews=="Extremely Liberal"))/nrow(gss1974)
+diff <- phat_2012 - phat_1974
+n1 <- nrow(gss2012)
+n2 <- nrow(gss1974)
+
+
+phat_pooled <- ((phat_2012*n1) + (phat_1974*n2))/(n1 + n2)
+se <- sqrt(((phat_pooled * (1 - phat_pooled))/n1) + ((phat_pooled * (1 - phat_pooled))/n2))
+z <- (diff - 0)/se
+z
+```
+
+First, I found the proportion of respondents who classified themselves as "extremely liberal" in 1974 and 2012, which should be the same as those found in the previous tables. I then conducted a hypothsis test for comparing 2 proportions by solving for the pooled p-hat, standard error, and z value. A z-value of 4.49 will produce a p-value very close to 0 so we can conclude that there is a significant difference in the proportion of people who identify themselves as "extremely liberal" between 1974 and 2012. 
+
+```{r}
+min <- (phat_2012 - phat_1974) - 1.96*se
+max <- (phat_2012 - phat_1974) + 1.96*se
+min
+max
+
+```
+
+I am 95% confident that the true difference in those who identify themselves as extreme liberals between 1974 and 2012 is (0.0156, 0.0397); since the null value (diff = 0) lies outside this interval, it agrees with the hypothesis test.
+
+
+##Extreme Conservatives between 1974-2012
+* h0: There is no difference in extreme conservatives between 1974 and 2012 (p1 = p2)
+* h1: There is a difference in extreme conservatives between 1974 and 2012 (p1 =/= p2)
+
+```{r}
+phat_2012 <- count(subset(gss2012, polviews=="Extrmly Conservative"))/nrow(gss2012)
+phat_1974 <- count(subset(gss1974, polviews=="Extrmly Conservative"))/nrow(gss1974)
+diff <- phat_2012 - phat_1974
+n1 <- nrow(gss2012)
+n2 <- nrow(gss1974)
+
+phat_pooled <- ((phat_2012*n1) + (phat_1974*n2))/(n1 + n2)
+se <- sqrt(((phat_pooled * (1 - phat_pooled))/n1) + ((phat_pooled * (1 - phat_pooled))/n2))
+z <- (diff - 0)/se
+z
+
+```
+
+This time the z value of 1.866 provides a p-value of ~0.031, which is greater than the 2-sided p-value of 0.025 (alpha = 0.05/2) I am comparing to. As a result, we cannot conclude that there is a significant difference in the amount of people who classify themselves as "extremely conservative between 1974 and 2012.
+
+```{r}
+min <- (phat_2012 - phat_1974) - 1.96*se
+max <- (phat_2012 - phat_1974) + 1.96*se
+min
+max
+```
+
+I am 95% confident that the true difference between those who identify themselves as extremely conservative between 1974 and 2012 is (-0.0006, 0.0235). Since the null value (diff=0) lies *within* this interval, it agrees with the hypothesis test.
+
+####Extreme Conservatives & Liberals between 1974-2012
+If the extreme conservative test concluded that there is a difference between the 2 years, we could safely conclulde that the proportion of extreme ideologies (both liberal and conservative) is different between 1974 and 2012. However, we need to conduct one more test to figure this out.
+
+* h0: There is no difference in extreme political views between 1974 and 2012 (p1 = p2)
+* h1: There is a difference in extreme political views between 1974 and 2012 (p1 =/= p2)
+
+```{r}
+phat_2012 <- count(gss2012[grep("Extr", gss2012$polviews),])/nrow(gss2012)
+phat_1974 <- count(gss1974[grep("Extr", gss1974$polviews),])/nrow(gss1974)
+
+diff <- phat_2012 - phat_1974
+n1 <- nrow(gss2012)
+n2 <- nrow(gss1974)
+
+phat_pooled <- ((phat_2012*n1) + (phat_1974*n2))/(n1 + n2)
+se <- sqrt(((phat_pooled * (1 - phat_pooled))/n1) + ((phat_pooled * (1 - phat_pooled))/n2))
+z <- (diff - 0)/se
+z
+```
+
+I first had to extract all "Extremely Liberal/Conservative" responses using the common string in order to find the p-hats for both 2012 and 1974. The z-value of 4.57 will provide a p-value very close to 0, so we can can conclude that there is a significant difference in extreme political views between 1974 and 2012.
+
+```{r}
+min <- (phat_2012 - phat_1974) - 1.96*se
+max <- (phat_2012 - phat_1974) + 1.96*se
+min
+max
+```
+
+I am 95% confident that the true difference in those who identify themselves as either extremely liberal or extremely conservative between 1974 and 2012 is (0.0223, 0.0558). Since the null value (diff=0) lies outside the interval, it agrees with the hypothesis test.
